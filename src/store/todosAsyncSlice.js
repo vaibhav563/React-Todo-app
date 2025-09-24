@@ -1,20 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import {
-  fetchTodos,
-  addTodo,
-  addTodoAsync,
-  toggleTodo,
-  removeTodo,
-  updateTodoAsync,
-  deleteTodoAsync,
-} from '../store/todosSlice'
+import { fetchTodos, updateTodoAsync, deleteTodoAsync } from '../store/todosAsyncSlice'
 import { ListGroup, Button, Form, Badge, Alert } from 'react-bootstrap'
 import { toast } from 'react-toastify'
 import EditTodoModal from './EditTodoModal'
 
 function TodoList() {
-  const { todos, status, error } = useSelector((state) => state.todos)
+  const { todos, status, error } = useSelector((state) => state.todosAsync)
   const dispatch = useDispatch()
   const [editTodo, setEditTodo] = useState(null)
 
@@ -22,14 +14,11 @@ function TodoList() {
     dispatch(fetchTodos())
   }, [dispatch])
 
-  const completedCount = todos.filter((todo) => todo.completed).length
+  const completedCount = todos.filter(todo => todo.completed).length
   const totalCount = todos.length
 
-  // ✅ Local + async toggle example
   const handleToggleTodo = (todo) => {
-    dispatch(toggleTodo(todo.id)) // local toggle
-    dispatch(updateTodoAsync({ id: todo.id, newTitle: updatedTitle })) // async update if needed
-
+    dispatch(updateTodoAsync({ id: todo.id, newName: todo.name })) // update call
     if (!todo.completed) {
       toast.success('🎉 Task completed! Great job!', { autoClose: 2000 })
     } else {
@@ -38,8 +27,7 @@ function TodoList() {
   }
 
   const handleDeleteTodo = (todo) => {
-    dispatch(removeTodo(todo.id)) // local remove
-    dispatch(deleteTodoAsync(todo.id)) // async remove
+    dispatch(deleteTodoAsync(todo.id))
     toast.success('✅ Task deleted successfully!', { autoClose: 2000 })
   }
 
@@ -78,10 +66,6 @@ function TodoList() {
               className={`d-flex justify-content-between align-items-center border-0 mb-2 rounded-3 ${
                 todo.completed ? 'bg-light' : 'bg-white'
               }`}
-              style={{
-                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                transition: 'all 0.3s ease',
-              }}
             >
               <Form.Check
                 type="checkbox"
@@ -90,15 +74,8 @@ function TodoList() {
                 className="me-3"
               />
               <div className="flex-grow-1 me-3">
-                <span
-                  className={`${
-                    todo.completed
-                      ? 'text-muted text-decoration-line-through'
-                      : 'text-dark'
-                  } fw-medium`}
-                  style={{ fontSize: '1.1rem' }}
-                >
-                  {todo.title}
+                <span className={`${todo.completed ? 'text-muted text-decoration-line-through' : 'text-dark'} fw-medium`}>
+                  {todo.name}
                 </span>
               </div>
               <div className="d-flex gap-2">
@@ -106,7 +83,6 @@ function TodoList() {
                   variant="outline-warning"
                   size="sm"
                   onClick={() => setEditTodo(todo)}
-                  className="px-3"
                 >
                   <i className="bi bi-pencil"></i>
                 </Button>
@@ -114,7 +90,6 @@ function TodoList() {
                   variant="outline-danger"
                   size="sm"
                   onClick={() => handleDeleteTodo(todo)}
-                  className="px-3"
                 >
                   <i className="bi bi-trash"></i>
                 </Button>
